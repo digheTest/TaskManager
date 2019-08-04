@@ -1,0 +1,11 @@
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnit3.TestAdapter.dll
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnit3.TestAdapter.pdb
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\nunit.engine.netstandard.dll
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnitWeAPI.deps.json
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnitWeAPI.runtimeconfig.json
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnitWeAPI.runtimeconfig.dev.json
+C:\Users\prash\source\repos\NUnitWeAPI\bin\Debug\netcoreapp2.1\NUnitWeAPI.dll
+C:\Users\prash\source\repos\NUnitWeAPI\obj\Debug\netcoreapp2.1\NUnitWeAPI.csprojAssemblyReference.cache
+C:\Users\prash\source\repos\NUnitWeAPI\obj\Debug\netcoreapp2.1\NUnitWeAPI.csproj.CoreCompileInputs.cache
+C:\Users\prash\source\repos\NUnitWeAPI\obj\Debug\netcoreapp2.1\NUnitWeAPI.AssemblyInfoInputs.cache
+C:\Users\prash\source\repos\NUnitWeAPI\obj\Debug\netcoreapp2.1\NUnitWeAPI.AssemblyInfo.cs

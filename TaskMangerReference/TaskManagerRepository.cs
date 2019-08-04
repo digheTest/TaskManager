@@ -36,16 +36,14 @@ namespace TaskReference
             tmdb.SaveChanges();
             return ParentTask.Parent_ID;
         }
-        public int EditParentTask(Parent_Task_Tbl ParentTask)
-        {
-            TaskManagerDbEntities tmdb = new TaskManagerDbEntities();
-            Parent_Task_Tbl ParentTaskDb = tmdb.Parent_Task_Tbl.Find(ParentTask.Parent_ID);
-            ParentTaskDb.Parent_Task = ParentTask.Parent_Task;
-            tmdb.SaveChanges();
-            return ParentTask.Parent_ID;
-
-
-        }
+        //public int EditParentTask(int parentID, string parentName)
+        //{
+        //    TaskManagerDbEntities tmdb = new TaskManagerDbEntities();
+        //    Parent_Task_Tbl ParentTaskDb = tmdb.Parent_Task_Tbl.Find(parentID);
+        //    ParentTaskDb.Parent_Task = parentName;
+        //    tmdb.SaveChanges();
+        //    return parentID;
+        //}
         public int CreateTask(Task_Tbl Task)
         {
             TaskManagerDbEntities tmdb = new TaskManagerDbEntities();
@@ -57,11 +55,7 @@ namespace TaskReference
         {
             TaskManagerDbEntities tmdb = new TaskManagerDbEntities();
             Task_Tbl TaskDb = tmdb.Task_Tbl.Find(Task.Task_ID);
-            TaskDb.Task = Task.Task;
-            TaskDb.Start_Date = Task.Start_Date;
-            TaskDb.End_Date = Task.End_Date;
-            TaskDb.Priority = Task.Priority;
-            TaskDb.Is_Completed = Task.Is_Completed;
+            tmdb.Entry(TaskDb).CurrentValues.SetValues(Task);
             tmdb.SaveChanges();
             return Task.Task_ID;
         }
@@ -80,13 +74,13 @@ namespace TaskReference
             return tmdb.SaveChanges();
         }
 
-        public int EditEndTask(Task_Tbl Task)
+        public int EditEndTask(int taskID, bool IsCompleted)
         {
             TaskManagerDbEntities tmdb = new TaskManagerDbEntities();
-            Task_Tbl TaskDb = tmdb.Task_Tbl.Find(Task.Task_ID);
-            TaskDb.Is_Completed = Task.Is_Completed;
+            Task_Tbl TaskDb = tmdb.Task_Tbl.Find(taskID);
+            TaskDb.Is_Completed = IsCompleted;
             tmdb.SaveChanges();
-            return Task.Task_ID;
+            return taskID;
         }
     }
 }

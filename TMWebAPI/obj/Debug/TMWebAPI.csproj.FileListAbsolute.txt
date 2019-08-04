@@ -67,3 +67,6 @@ C:\Users\prash\source\repos\TMWebAPI\obj\Debug\TMWebAPI.csprojAssemblyReference.
 C:\Users\prash\source\repos\TMWebAPI\obj\Debug\TMWebAPI.csproj.CopyComplete
 C:\Users\prash\source\repos\TMWebAPI\obj\Debug\TMWebAPI.dll
 C:\Users\prash\source\repos\TMWebAPI\obj\Debug\TMWebAPI.pdb
+C:\Users\prash\source\repos\TMWebAPI\bin\System.Web.Cors.dll
+C:\Users\prash\source\repos\TMWebAPI\bin\System.Web.Http.Cors.dll
+C:\Users\prash\source\repos\TMWebAPI\bin\System.Web.Http.Cors.xml

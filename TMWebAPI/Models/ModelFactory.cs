@@ -10,7 +10,14 @@ namespace TMWebAPI.Models
     {
         public ParentTaskModel GetParentTaskMoDel(Parent_Task_Tbl parentTaskTbl)
         {
-            return new ParentTaskModel()
+            ParentTaskModel ptm = new ParentTaskModel();
+            ptm.ParentTaskID = parentTaskTbl.Parent_ID;
+            ptm.ParentTaskName = parentTaskTbl.Parent_Task;
+            ptm.Task = parentTaskTbl.Task_Tbl.Select(t => GetTaskModel(t));
+
+
+
+                return new ParentTaskModel()
             {
                 ParentTaskID = parentTaskTbl.Parent_ID,
                 ParentTaskName = parentTaskTbl.Parent_Task,

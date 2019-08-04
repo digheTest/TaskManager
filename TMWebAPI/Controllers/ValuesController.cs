@@ -5,12 +5,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using TaskMangerReference;
 using TaskReference;
 using TMWebAPI.Models;
 
 namespace TMWebAPI.Controllers
 {
+    //[EnableCors(origins: "https://localhost:4200", headers:"*",methods:"*")]
+    [RoutePrefix("api/[controller]")]
     public class ValuesController : ApiController
     {
         ModelFactory _modelFactory;
@@ -27,39 +30,47 @@ namespace TMWebAPI.Controllers
         public IEnumerable<ParentTaskModel> Get()
         {
             TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-            return parentTaskRep.GetAllParentTasksRepo().ToList().Select(p => _modelFactory.GetParentTaskMoDel(p));
+            var allParentTask = parentTaskRep.GetAllParentTasksRepo().ToList();
+            var allChildTask = parentTaskRep.GetAllTaskRepo().ToList();
+            Parent_Task_Tbl newParent = new Parent_Task_Tbl
+            {
+                Task_Tbl = allChildTask,
+            };
+            allParentTask.Add(newParent);
+
+            return allParentTask.Select(p => _modelFactory.GetParentTaskMoDel(p));
         }
-        [HttpGet]
-        public ParentTaskModel GetParentTask(int ParentID)
-        {
-            TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-            return _modelFactory.GetParentTaskMoDel(parentTaskRep.GetParentTaskRepo(ParentID));
-        }
-        [HttpGet]
-        public IEnumerable<TaskModel> GetAllTask()
-        {
-            TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-            return parentTaskRep.GetAllTaskRepo().ToList().Select(t => _modelFactory.GetTaskModel(t));
-        }
-        [HttpGet]
-        public TaskModel GetTask(int TaskID)
-        {
-            TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-            return _modelFactory.GetTaskModel(parentTaskRep.GetTaskRepo(TaskID));
-        }
+        //[HttpGet]
+        //public ParentTaskModel GetParentTask(int parentID)
+        //{
+        //    TaskManagerRepository parentTaskRep = new TaskManagerRepository();
+        //    return _modelFactory.GetParentTaskMoDel(parentTaskRep.GetParentTaskRepo(parentID));
+        //}
+        //[HttpGet]
+        //public IEnumerable<TaskModel> GetAllTask()
+        //{
+        //    TaskManagerRepository parentTaskRep = new TaskManagerRepository();
+        //    return parentTaskRep.GetAllTaskRepo().ToList().Select(t => _modelFactory.GetTaskModel(t));
+        //}
+        //[HttpGet]
+        //public TaskModel GetTask(int taskID)
+        //{
+        //    TaskManagerRepository parentTaskRep = new TaskManagerRepository();
+        //    return _modelFactory.GetTaskModel(parentTaskRep.GetTaskRepo(taskID));
+        //}
         [HttpPost]
-        public IHttpActionResult CreateParentTask([FromBody]ParentTaskModel ParentTask)
+        public IHttpActionResult CreateParentTask([FromBody]ParentTaskModel parentTask)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Not a valid data");
             try
             {
                 TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-                Parent_Task_Tbl ParentTaskDb = new Parent_Task_Tbl
+                Parent_Task_Tbl parentTaskDb = new Parent_Task_Tbl
                 {
-                    Parent_Task = ParentTask.ParentTaskName,
+                    Parent_Task = parentTask.ParentTaskName,
                 };
-                string result = "{'ParentTaskID': " + parentTaskRep.CreateParentTask(ParentTaskDb) + "}";
+                string result = "{'ParentTaskID': " + parentTaskRep.CreateParentTask(parentTaskDb) + "}";
                 JObject json = JObject.Parse(result);
                 return Ok<JObject>(json);
 
@@ -71,53 +82,71 @@ namespace TMWebAPI.Controllers
 
         }
 
-        // PUT api/values/5
-        [HttpPut]
-        public IHttpActionResult EditParentTask([FromBody]ParentTaskModel ParentTask)
+        //// PUT api/values/5
+        //[HttpPut]
+        //public IHttpActionResult EditParentTask([FromBody]ParentTaskModel parentTask)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Not a valid data");
+        //    try
+        //    {
+        //        TaskManagerRepository parentTaskRep = new TaskManagerRepository();
+
+        //        Parent_Task_Tbl parentTaskDb = parentTaskRep.GetParentTaskRepo(parentTask.ParentTaskID);
+
+        //        if (parentTaskDb != null)
+        //        {
+        //            parentTaskDb.Parent_Task = parentTask.ParentTaskName;
+        //            string result = "{'ParentTaskID': " + parentTaskRep.EditParentTask(parentTask.ParentTaskID,parentTask.ParentTaskName) + "}";
+        //            JObject json = JObject.Parse(result);
+        //            return Ok<JObject>(json);
+        //        }
+        //        else
+        //        {
+        //            return BadRequest("Error occurred during data update in EditParentTask");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error occurred in EditParentTask :" + ex.StackTrace);
+        //    }
+        //}
+
+        //[HttpPut]
+        //public IHttpActionResult EditParentChildTask([FromBody]ParentTaskModel parentTask)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Not a valid data");
+        //    try
+        //    {
+        //        EditParentTask(parentTask);
+        //        return TaskDBChanges(parentTask.Task.FirstOrDefault(), parentTask.ParentTaskID);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error occurred in EditParentTask :" + ex.StackTrace);
+        //    }
+        //}
+        [HttpPost]
+        public IHttpActionResult ManageTask([FromBody]ParentTaskModel parentTask)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Not a valid data");
             try
             {
-                TaskManagerRepository parentTaskRep = new TaskManagerRepository();
-
-                Parent_Task_Tbl ParentTaskDb = parentTaskRep.GetParentTaskRepo(ParentTask.ParentTaskID);
-
-                if (ParentTaskDb != null)
+                if (parentTask.ParentTaskID == 0)
                 {
-                    ParentTaskDb.Parent_Task = ParentTask.ParentTaskName;
-                    string result = "{'ParentTaskID': " + parentTaskRep.EditParentTask(ParentTaskDb) + "}";
-                    JObject json = JObject.Parse(result);
-                    return Ok<JObject>(json);
+                    return TaskDBChanges(parentTask.Task.FirstOrDefault(), 0);
+                }
+                else if (parentTask.ParentTaskID == -1)
+                {
+                    CreateParentTask(parentTask);
+                    return TaskDBChanges(parentTask.Task.FirstOrDefault());
                 }
                 else
                 {
-                    return BadRequest("Error occurred during data update in EditParentTask");
+                    return TaskDBChanges(parentTask.Task.FirstOrDefault(), parentTask.ParentTaskID);
                 }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error occurred in EditParentTask :" + ex.StackTrace);
-            }
-        }
-        [HttpPost]
-        public IHttpActionResult CreateTask([FromBody]TaskModel TaskModel)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest("Not a valid data");
-            try
-            {
-                TaskManagerRepository taskRep = new TaskManagerRepository();
-                Task_Tbl TaskDb = new Task_Tbl
-                {
-                    Task = TaskModel.TaskName,
-                    Start_Date = Convert.ToDateTime(TaskModel.StartDate),
-                    End_Date = Convert.ToDateTime(TaskModel.EndDate),
-                    Priority = TaskModel.Priority
-                };
-                string result = "{'TaskID': " + taskRep.CreateTask(TaskDb) + "}";
-                JObject json = JObject.Parse(result);
-                return Ok<JObject>(json);
             }
             catch (Exception ex)
             {
@@ -126,39 +155,55 @@ namespace TMWebAPI.Controllers
 
         }
 
-        // PUT api/values/5
-        [HttpPut]
-        public IHttpActionResult EditTask([FromBody]TaskModel TaskModel)
+        //// PUT api/values/5
+        //[HttpPut]
+        //public IHttpActionResult EditTask([FromBody]TaskModel TaskModel)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Not a valid data");
+        //    try
+        //    {
+        //        return TaskDBChanges(TaskModel);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error occurred in EditTask :" + ex.StackTrace);
+        //    }
+        //}
+
+        private IHttpActionResult TaskDBChanges(TaskModel taskModel, int parentID = 0)
         {
-            if (!ModelState.IsValid)
-                return BadRequest("Not a valid data");
-            try
+            TaskManagerRepository taskRep = new TaskManagerRepository();
+
+            Task_Tbl taskDb = taskRep.GetTaskRepo(taskModel.TaskId);
+
+            if (taskDb != null)
             {
-                TaskManagerRepository taskRep = new TaskManagerRepository();
-
-                Task_Tbl TaskDb = taskRep.GetTaskRepo(TaskModel.TaskId);
-
-                if (TaskDb != null)
-                {
-                    TaskDb.Task = TaskModel.TaskName;
-                    TaskDb.Start_Date = Convert.ToDateTime(TaskModel.StartDate);
-                    TaskDb.End_Date = Convert.ToDateTime(TaskModel.EndDate);
-                    TaskDb.Priority = TaskModel.Priority;
-                    TaskDb.Is_Completed = Convert.ToBoolean(TaskModel.IsCompleted);
-                    string result = "{'TaskID': " + taskRep.EditTask(TaskDb) + "}";
-                    JObject json = JObject.Parse(result);
-                    return Ok<JObject>(json);
-                }
-                else
-                {
-                    return BadRequest("Error occurred during data update in EditTask");
-                }
+                taskDb.Parent_ID = parentID > 0 ? parentID : (int?)null;
+                taskDb.Task = taskModel.TaskName;
+                taskDb.Start_Date = Convert.ToDateTime(taskModel.StartDate);
+                taskDb.End_Date = Convert.ToDateTime(taskModel.EndDate);
+                taskDb.Priority = taskModel.Priority;
+                taskDb.Is_Completed = Convert.ToBoolean(taskModel.IsCompleted);
+                string result = "{'TaskID': " + taskRep.EditTask(taskDb) + "}";
+                JObject json = JObject.Parse(result);
+                return Ok<JObject>(json);
             }
-            catch (Exception ex)
+            else
             {
-                return BadRequest("Error occurred in EditTask :" + ex.StackTrace);
+                Task_Tbl taskDbNew = new Task_Tbl
+                {
+                    Task = taskModel.TaskName,
+                    Start_Date = Convert.ToDateTime(taskModel.StartDate),
+                    End_Date = Convert.ToDateTime(taskModel.EndDate),
+                    Priority = taskModel.Priority
+                };
+                string result = "{'TaskID': " + taskRep.CreateTask(taskDbNew) + "}";
+                JObject json = JObject.Parse(result);
+                return Ok<JObject>(json);
             }
         }
+
         [HttpDelete]
         public IHttpActionResult DeleteTask(int TaskID)
         {
@@ -183,34 +228,34 @@ namespace TMWebAPI.Controllers
                 return BadRequest("Error occurred in DeleteTask :" + ex.StackTrace);
             }
         }
-        [HttpDelete]
-        public IHttpActionResult DeleteParentTask(int ParentTaskID)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest("Not a valid data");
-            try
-            {
-                TaskManagerRepository parentTaskRep = new TaskManagerRepository();
+        //[HttpDelete]
+        //public IHttpActionResult DeleteParentTask(int ParentTaskID)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest("Not a valid data");
+        //    try
+        //    {
+        //        TaskManagerRepository parentTaskRep = new TaskManagerRepository();
 
 
-                if (ParentTaskID > 0)
-                {
-                    parentTaskRep.DeleteParentTask(ParentTaskID);
-                    return Ok();
-                }
-                else
-                {
-                    return BadRequest("Error occurred during data deletion in DeleteParentTask");
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Error occurred in DeleteParentTask :" + ex.StackTrace);
-            }
-        }
+        //        if (ParentTaskID > 0)
+        //        {
+        //            parentTaskRep.DeleteParentTask(ParentTaskID);
+        //            return Ok();
+        //        }
+        //        else
+        //        {
+        //            return BadRequest("Error occurred during data deletion in DeleteParentTask");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Error occurred in DeleteParentTask :" + ex.StackTrace);
+        //    }
+        //}
 
         [HttpPut]
-        public IHttpActionResult EditEndTask([FromBody]TaskModel TaskModel)
+        public IHttpActionResult EditEndTask([FromBody]TaskModel taskModel)
         {
             if (!ModelState.IsValid)
                 return BadRequest("Not a valid data");
@@ -218,12 +263,12 @@ namespace TMWebAPI.Controllers
             {
                 TaskManagerRepository taskRep = new TaskManagerRepository();
 
-                Task_Tbl TaskDb = taskRep.GetTaskRepo(TaskModel.TaskId);
+                Task_Tbl taskDb = taskRep.GetTaskRepo(taskModel.TaskId);
 
-                if (TaskDb != null)
+                if (taskDb != null)
                 {
-                    TaskDb.Is_Completed = Convert.ToBoolean(TaskModel.IsCompleted);
-                    string result = "{'TaskID': " + taskRep.EditEndTask(TaskDb) + "}";
+                    //taskDb.Is_Completed = Convert.ToBoolean(taskModel.IsCompleted);
+                    string result = "{'TaskID': " + taskRep.EditEndTask(taskModel.TaskId, taskModel.IsCompleted) + "}";
                     JObject json = JObject.Parse(result);
                     return Ok<JObject>(json);
                 }
